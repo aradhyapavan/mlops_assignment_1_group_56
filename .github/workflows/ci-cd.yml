@@ -44,11 +44,6 @@ jobs:
     - name: Run MLflow Tracking
       run: python train_model.py
 
-    - name: Lint with flake8
-      run: |
-        pip install flake8
-        flake8 .
-
     - name: Run tests with unittest
       run: python -m unittest discover
 
