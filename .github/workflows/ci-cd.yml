@@ -1,13 +1,3 @@
-name: CI/CD Pipeline
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,12 +9,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.11'  # Downgrade to Python 3.11
-
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev
+        python-version: '3.11'
 
     - name: Upgrade pip, setuptools, and wheel
       run: |
@@ -34,9 +19,15 @@ jobs:
       run: |
         pip install -r requirements.txt
 
+    - name: Start MLflow server
+      run: |
+        mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns --host 127.0.0.1 --port 5000 &
+      env:
+        MLFLOW_TRACKING_URI: http://127.0.0.1:5000
+
     - name: Run MLflow Tracking
       run: |
-        python train_model.py  # Ensure this script includes MLflow logging
+        python train_model.py
 
     - name: Lint with flake8
       run: |
