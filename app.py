@@ -1,28 +1,29 @@
 from flask import Flask, request, jsonify
-import joblib
-import numpy as np
-import os
+from joblib import load
+import pandas as pd
 
 app = Flask(__name__)
 
-# Load the model
-model_path = os.path.join(os.path.dirname(__file__), '../models/model.joblib')
-model = joblib.load(model_path)
+# Load the trained model
+model = load('models/model.joblib')
 
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        # Extract features from the request data
-        data = request.get_json(force=True)
-        features = np.array(data['features']).reshape(1, -1)
+        # Get the JSON data from the request
+        data = request.json
+        
+        # Convert the JSON data to a DataFrame
+        df = pd.DataFrame(data)
         
         # Make predictions
-        prediction = model.predict(features)
+        predictions = model.predict(df)
         
-        # Return the prediction as JSON
-        return jsonify({'prediction': int(prediction[0])})
+        # Return the predictions as a JSON response
+        return jsonify(predictions.tolist())
+    
     except Exception as e:
         return jsonify({'error': str(e)})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5001)
